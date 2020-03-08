@@ -1,4 +1,4 @@
-# Embedding Propagation: Smoother Manifold for Few-Shot Classification
+## Embedding Propagation: Smoother Manifold for Few-Shot Classification
 Code and experimental setups for embedding propagation
 
 ## Data
