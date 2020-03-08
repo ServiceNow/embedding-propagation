@@ -1,0 +1,1 @@
+-e git://github.com/ElementAI/haven.git#egg=haven
