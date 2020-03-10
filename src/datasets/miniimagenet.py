@@ -59,7 +59,7 @@ class RotatedNonEpisodicMiniImagenet(Dataset):
             disjoint: whether to create disjoint splits.
         """
         self.data_root = os.path.join(data_root, "mini-imagenet-%s.npz")
-        data = np.load(self.ROOT_PATH % self.split_paths[split])
+        data = np.load(self.data_root % self.split_paths[split])
         self.features = data["features"]
         self.labels = data["targets"]
         self.transforms = transforms

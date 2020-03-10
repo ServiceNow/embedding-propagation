@@ -24,7 +24,7 @@ class EpisodicMiniImagenet(EpisodicDataset):
             size: number of tasks to generate (int)
             disjoint: whether to create disjoint splits.
         """
-        self.data_root = data_root
+        self.data_root = os.path.join(data_root, "mini-imagenet-%s.npz")
         self.split = split
         data = np.load(self.data_root % self.split_paths[split])
         self.features = data["features"]

@@ -119,13 +119,8 @@ for dataset in [miniimagenet, tiered_imagenet, cub]:
                                         "cross_entropy_weight": 1,
                                         "few_shot_weight": 0,
                                         "rotation_weight": 1,
-                                        "smoothness_weight": 0,
                                         "active_size": 0,
                                         "distance_type": "labelprop",
-                                        "kernel_type": "rbf",
-                                        "kernel_standarization": "all",
                                         "kernel_bound": "",
-                                        "labelprop_alpha": 0.2,
-                                        "labelprop_scale": 1,
                                         "rotation_labels": [0, 1, 2, 3]
                                         }]

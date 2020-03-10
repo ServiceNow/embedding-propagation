@@ -8,12 +8,12 @@ import torch
 import torch.nn.functional as F
 
 from src.tools.meters import BasicMeter
-from src.modules.distances import standarized_label_prop, _propagate, prototype_distance
+from src.modules.distances import prototype_distance
+from src.modules.embedding_propagation import EmbeddingPropagation, LabelPropagation
 from .base_wrapper import BaseWrapper
 from haven import haven_utils as haven
 from scipy.stats import sem, t
 import shutil as sh
-from time import sleep
 import sys
 
 
@@ -32,6 +32,8 @@ class FinetuneWrapper(BaseWrapper):
         self.exp_dict = exp_dict 
         self.ngpu = self.exp_dict["ngpu"]
 
+        self.embedding_propagation = EmbeddingPropagation()
+        self.label_propagation = LabelPropagation()
         self.model.add_classifier(nclasses, modalities=0)
         self.nclasses = nclasses
 
@@ -91,23 +93,16 @@ class FinetuneWrapper(BaseWrapper):
             torch.Tensor: logits
         """
         b, c = embeddings.size()
-        embeddings = embeddings.view(support_size + query_size, nclasses, c)
-        support_labels = torch.arange(nclasses, device=embeddings.device).view(1, nclasses).repeat(support_size, 1)
-        one_hot_labels = torch.zeros(1, b, nclasses, device=support_labels.device, dtype=torch.float)
-        to_one_hot = torch.eye(nclasses, dtype=torch.float, device=support_labels.device)
-        one_hot_labels[:, :(support_size * nclasses), :] = to_one_hot[support_labels.view(-1)].view(1, -1, nclasses)
 
+        propagator = None
         if self.exp_dict["embedding_prop"] == True:
-            logits, propagator = standarized_label_prop(embeddings.view(1, -1, c),
-                                                        one_hot_labels.view(1, -1, nclasses))
-            embeddings = _propagate(embeddings.view(1, -1, c), propagator)
+            embeddings = self.embedding_propagation(embeddings)
+
         if self.exp_dict["distance_type"] == "labelprop":
-            logits, propagator = standarized_label_prop(embeddings.view(1, -1, c),
-                                                        one_hot_labels.view(1, -1, nclasses),
-                                                        alpha=self.exp_dict["labelprop_alpha"],
-                                                        gaussian_scale=self.exp_dict["labelprop_scale"],
-                                                        apply_log=True,
-                                                        norm_prop=self.exp_dict["norm_prop"])
+            support_labels = torch.arange(nclasses, device=embeddings.device).view(1, nclasses).repeat(support_size, 1).view(support_size, nclasses)
+            unlabeled_labels = nclasses * torch.ones(query_size * nclasses, dtype=support_labels.dtype, device=support_labels.device).view(query_size, nclasses)
+            labels = torch.cat([support_labels, unlabeled_labels], 0).view(-1)
+            logits = self.label_propagation(embeddings, labels, nclasses)
             logits = logits.view(-1, nclasses, nclasses)[support_size:(support_size + query_size), ...].view(-1, nclasses)
 
         elif self.exp_dict["distance_tpe"] == "prototypical":

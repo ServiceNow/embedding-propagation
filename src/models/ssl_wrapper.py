@@ -12,7 +12,7 @@ import pandas as pd
 import torch.nn.functional as F
 import tqdm
 from src.tools.meters import BasicMeter
-from src.modules.distances import standarized_label_prop, _propagate, prototype_distance
+# from src.modules.distances import standarized_label_prop, _propagate, prototype_distance
 from .base_wrapper import BaseWrapper
 from haven import haven_utils as haven
 import glob
