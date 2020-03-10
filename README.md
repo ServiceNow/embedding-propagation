@@ -37,3 +37,15 @@ You can either edit `data_root` in the `exp_configs/[pretraining|finetuning].py`
 |        5         |tiered-imagen| conv4  |   0.7391    |    0.0074     |
 |        5         |tiered-imagen|resnet12|   0.8748    |    0.0058     |
 |        5         |tiered-imagen|  wrn   |   0.8845    |    0.0053     |
+
+## Cite
+```
+@misc{rodrguez2020embedding,
+    title={Embedding Propagation: Smoother Manifold for Few-Shot Classification},
+    author={Pau Rodríguez and Issam Laradji and Alexandre Drouin and Alexandre Lacoste},
+    year={2020},
+    eprint={2003.04151},
+    archivePrefix={arXiv},
+    primaryClass={cs.CV}
+}
+```
