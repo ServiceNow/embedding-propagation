@@ -3,6 +3,16 @@
 
 Code and experimental setups for embedding propagation
 
+## Usage
+```python
+import torch
+from src.modules.embedding_propagation import EmbeddingPropagation
+
+ep = EmbeddingPropagation()
+features = torch.randn(32, 32)
+embeddings = ep(features)
+```
+
 ## Data
 * [mini-imagenet](https://github.com/renmengye/few-shot-ssl-public#miniimagenet)
 * [tiered-imagenet](https://github.com/renmengye/few-shot-ssl-public#tieredimagenet)
@@ -40,12 +50,10 @@ You can either edit `data_root` in the `exp_configs/[pretraining|finetuning].py`
 
 ## Cite
 ```
-@misc{rodrguez2020embedding,
-    title={Embedding Propagation: Smoother Manifold for Few-Shot Classification},
-    author={Pau Rodríguez and Issam Laradji and Alexandre Drouin and Alexandre Lacoste},
-    year={2020},
-    eprint={2003.04151},
-    archivePrefix={arXiv},
-    primaryClass={cs.CV}
+@article{rodriguez2020embedding,
+  title={Embedding Propagation: Smoother Manifold for Few-Shot Classification},
+  author={Pau Rodríguez and Issam Laradji and Alexandre Drouin and Alexandre Lacoste},
+  year={2020},
+  journal={arXiv preprint arXiv:2003.04151},
 }
 ```
