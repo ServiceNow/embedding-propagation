@@ -14,7 +14,7 @@ embeddings = ep(features)
 ```
 
 ## Data
-* [mini-imagenet](https://github.com/renmengye/few-shot-ssl-public#miniimagenet)
+* [mini-imagenet](https://github.com/renmengye/few-shot-ssl-public#miniimagenet) [pre-processing](https://github.com/ElementAI/TADAM/tree/master/datasets)
 * [tiered-imagenet](https://github.com/renmengye/few-shot-ssl-public#tieredimagenet)
 * [CUB](https://github.com/wyharveychen/CloserLookFewShot/tree/master/filelists/CUB)
 
