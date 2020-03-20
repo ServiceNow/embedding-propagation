@@ -11,7 +11,7 @@ import pandas as pd
 import  numpy as np
 from torchvision.datasets import CIFAR10, CIFAR100
 from .episodic_dataset import FewShotSampler
-from .episodic_miniimagenet import EpisodicMiniImagenet
+from .episodic_miniimagenet import EpisodicMiniImagenet, EpisodicMiniImagenetPkl
 from .miniimagenet import NonEpisodicMiniImagenet, RotatedNonEpisodicMiniImagenet
 from .episodic_tiered_imagenet import EpisodicTieredImagenet
 from .tiered_imagenet import RotatedNonEpisodicTieredImagenet
@@ -44,6 +44,13 @@ def get_dataset(dataset_name,
     elif dataset_name == "episodic_miniimagenet":
         few_shot_sampler = FewShotSampler(classes, support_size, query_size, unlabeled_size)
         dataset = EpisodicMiniImagenet(data_root=data_root,
+                                       split=split, 
+                                       sampler=few_shot_sampler,
+                                       size=n_iters,
+                                       transforms=transform_func)
+    elif dataset_name == "episodic_miniimagenet_pkl":
+        few_shot_sampler = FewShotSampler(classes, support_size, query_size, unlabeled_size)
+        dataset = EpisodicMiniImagenetPkl(data_root=data_root,
                                        split=split, 
                                        sampler=few_shot_sampler,
                                        size=n_iters,
