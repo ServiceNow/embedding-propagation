@@ -13,6 +13,12 @@ features = torch.randn(32, 32)
 embeddings = ep(features)
 ```
 
+### Install requirements
+
+`pip install -r requirements.txt`
+ 
+This command installs the [Haven library](https://github.com/ElementAI/haven) which helps in managing the experiments.
+
 ## Data
 * [mini-imagenet](https://github.com/renmengye/few-shot-ssl-public#miniimagenet) ([pre-processing](https://github.com/ElementAI/TADAM/tree/master/datasets))
 * [tiered-imagenet](https://github.com/renmengye/few-shot-ssl-public#tieredimagenet)
