@@ -3,7 +3,7 @@ import os
 import torch
 import torch.nn.functional as F
 from src.tools.meters import BasicMeter
-from src.modules.embedding_propagation import EmbeddingPropagation, LabelPropagation
+from embedding_propagation import EmbeddingPropagation, LabelPropagation
 from .base_wrapper import BaseWrapper
 from src.modules.distances import prototype_distance
 

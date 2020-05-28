@@ -9,7 +9,7 @@ import torch.nn.functional as F
 
 from src.tools.meters import BasicMeter
 from src.modules.distances import prototype_distance
-from src.modules.embedding_propagation import EmbeddingPropagation, LabelPropagation
+from embedding_propagation import EmbeddingPropagation, LabelPropagation
 from .base_wrapper import BaseWrapper
 from haven import haven_utils as haven
 from scipy.stats import sem, t

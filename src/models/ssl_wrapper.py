@@ -46,7 +46,10 @@ class SSLWrapper(BaseWrapper):
         best_accuracy = -1 
         self.label = exp_dict['model']['backbone'] + "_" + exp_dict['dataset_test'].split('_')[1].replace('-imagenet','')
 
-        if self.exp_dict["pretrained_weights_root"] == 'tinder':
+        if 'pretrained_weights_root' not in self.exp_dict:
+            self.best_accuracy = -1
+
+        elif self.exp_dict["pretrained_weights_root"] == 'tinder':
             best_scores = np.load('/mnt/datasets/public/research/adaptron_laplace/best_scores.npy', allow_pickle=True)
             for r in best_scores:
                 backbone_best = r[3]
@@ -206,7 +209,7 @@ class SSLWrapper(BaseWrapper):
 
     def val_on_batch(self, batch):
         # if self.exp_dict['ora']
-        if self.exp_dict["pretrained_weights_root"] == 'hdf5':
+        if self.exp_dict.get("pretrained_weights_root") == 'hdf5':
             episode_dict = self.sampler.sample_episode(int(self.exp_dict['support_size_test']), 
                                                             self.exp_dict['query_size_test'], 
                                                             self.exp_dict['unlabeled_size_test'], 
@@ -240,7 +243,7 @@ class SSLWrapper(BaseWrapper):
         test_accuracy_meter = BasicMeter.get("test_accuracy").reset()
         test_accuracy = []
         # Iterate through tasks, each iteration loads n tasks, with n = number of GPU
-        dirname = os.path.split(self.exp_dict["pretrained_weights_root"])[-1]
+        # dirname = os.path.split(self.exp_dict["pretrained_weights_root"])[-1]
         with tqdm.tqdm(total=len(data_loader)) as pbar:
             for batch_all in data_loader:
                 batch = batch_all[0]
@@ -249,8 +252,10 @@ class SSLWrapper(BaseWrapper):
                 test_accuracy_meter.update(float(accuracy), 1)
                 test_accuracy.append(float(accuracy))
 
-                string = ("'%s' - %s - finetuned: %.3f -  ssl: %.3f" % 
-                                (self.label, dirname, self.best_accuracy, test_accuracy_meter.mean()))
+                string = ("'%s'  -  ssl: %.3f" % 
+                                (self.label, 
+                                # dirname, 
+                                test_accuracy_meter.mean()))
                 # print(string)
                 pbar.update(1)
                 pbar.set_description(string)

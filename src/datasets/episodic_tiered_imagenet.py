@@ -19,7 +19,7 @@ class EpisodicTieredImagenet(EpisodicDataset):
     h = 84
     w = 84
     def __init__(self, data_root, split, sampler, size, transforms):
-        self.data_root
+        self.data_root = data_root
         self.split = split
         img_path = os.path.join(self.data_root, "%s_images_png.pkl" %(split))
         label_path = os.path.join(self.data_root, "%s_labels.pkl" %(split))

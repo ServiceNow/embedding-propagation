@@ -133,12 +133,12 @@ class EpisodicDataset(Dataset):
 
 
     def __iter__(self):
-        print("Prefetching new epoch episodes")
+        # print("Prefetching new epoch episodes")
         self.task_list = []
         while len(self.task_list) < self.size:
             self.reshuffle()
             self.task_list += self.sample_task_list()
-        print("done prefetching.")
+        # print("done prefetching.")
         return []
 
     def __len__(self):

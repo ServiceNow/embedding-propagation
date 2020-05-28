@@ -23,7 +23,8 @@ from haven import haven_chk as hc
 from haven import haven_jupyter as hj
 
 
-def trainval(exp_dict, savedir_base, reset=False, num_workers=0, run_ssl=False):
+def trainval(exp_dict, savedir_base, datadir, reset=False, 
+            num_workers=0, checkpoint_path=None):
     # bookkeeping
     # ---------------
 
@@ -44,7 +45,7 @@ def trainval(exp_dict, savedir_base, reset=False, num_workers=0, run_ssl=False):
     # load datasets
     # ==========================
     train_set = datasets.get_dataset(dataset_name=exp_dict["dataset_train"],
-                data_root=exp_dict["dataset_train_root"],
+                data_root=exp_dict.get("dataset_train_root", datadir),
                 split="train", 
                 transform=exp_dict["transform_train"], 
                 classes=exp_dict["classes_train"],
@@ -54,7 +55,7 @@ def trainval(exp_dict, savedir_base, reset=False, num_workers=0, run_ssl=False):
                 unlabeled_size=exp_dict["unlabeled_size_train"])
 
     val_set = datasets.get_dataset(dataset_name=exp_dict["dataset_val"],
-                data_root=exp_dict["dataset_val_root"],
+                data_root=exp_dict.get("dataset_val_root", datadir),
                 split="val", 
                 transform=exp_dict["transform_val"], 
                 classes=exp_dict["classes_val"],
@@ -64,7 +65,7 @@ def trainval(exp_dict, savedir_base, reset=False, num_workers=0, run_ssl=False):
                 unlabeled_size=exp_dict["unlabeled_size_val"])
 
     test_set = datasets.get_dataset(dataset_name=exp_dict["dataset_test"],
-                data_root=exp_dict["dataset_test_root"],
+                data_root=exp_dict.get("dataset_test_root", datadir),
                 split="test", 
                 transform=exp_dict["transform_val"], 
                 classes=exp_dict["classes_test"],
@@ -106,8 +107,20 @@ def trainval(exp_dict, savedir_base, reset=False, num_workers=0, run_ssl=False):
     model = models.get_model(model_name=exp_dict["model"]['name'], backbone=backbone, 
                                  n_classes=exp_dict["n_classes"],
                                  exp_dict=exp_dict)
+    # load model checkpoint
+    if  exp_dict.get('checkpoint_exp_id'):
+        checkpoint_path = os.path.join(savedir_base, 
+                                        exp_dict['checkpoint_exp_id'], 
+                                       'checkpoint_best.pth')
+    if checkpoint_path:
+        s_path = os.path.join(os.path.dirname(checkpoint_path), 'score_list_best.pkl')
+        print('Loaded checkpoint from exp_id: %s' % 
+          os.path.split(os.path.dirname(checkpoint_path))[-1]
+        )
+        print('Fine-tuned accuracy: %.3f' % hu.load_pkl(s_path)[-1]['test_accuracy'])
+        model.model.load_state_dict(torch.load(checkpoint_path)['model'])
     
-    if run_ssl:
+    if exp_dict["model"]['name'] == 'ssl':
         # runs the SSL experiments
         score_list_path = os.path.join(savedir, 'score_list.pkl')
         if not os.path.exists(score_list_path):
@@ -129,8 +142,6 @@ def trainval(exp_dict, savedir_base, reset=False, num_workers=0, run_ssl=False):
         # restart experiment
         score_list = []
         s_epoch = 0
-
-    
 
     # Run training and validation
     for epoch in range(s_epoch, exp_dict["max_epoch"]):
@@ -177,13 +188,12 @@ if __name__ == '__main__':
 
     parser.add_argument('-e', '--exp_group_list', nargs='+')
     parser.add_argument('-sb', '--savedir_base', required=True)
+    parser.add_argument('-d', '--datadir', default='')
     parser.add_argument('-r', '--reset',  default=0, type=int)
     parser.add_argument('-ei', '--exp_id', default=None)
-    parser.add_argument('-v', '--view_jupyter', default=None)
     parser.add_argument('-j', '--run_jobs', default=None)
+    parser.add_argument('-cp', '--checkpoint_path', default=None)
     parser.add_argument('-nw', '--num_workers', default=0, type=int)
-
-    parser.add_argument('-s', '--run_ssl', default=0, type=int)
 
     args = parser.parse_args()
 
@@ -205,20 +215,14 @@ if __name__ == '__main__':
 
     # Run experiments or View them
     # ----------------------------
-    if args.view_jupyter:
-        # view results
-        hj.view_jupyter(exp_list, 
-                        savedir_base=args.savedir_base, 
-                        fname='results/example.ipynb',
-                        # job_utils_path=job_configs.job_utils_path,
-                        install_flag=True)
-
-    elif args.run_jobs:
+    if args.run_jobs:
         # launch jobs
         from haven import haven_jobs as hjb
         import user_config
-        run_command = ('python trainval.py -ei <exp_id> -sb %s -s %s' %  
-                       (args.savedir_base, args.run_ssl))
+        run_command = ('python trainval.py -ei <exp_id> -sb %s'
+                        ' -d %s -s %s' %  
+                       (args.savedir_base, args.datadir,
+                        args.run_ssl))
         hjb.run_exp_list_jobs(exp_list, 
                             savedir_base=args.savedir_base, 
                             workdir=os.path.dirname(os.path.realpath(__file__)),
@@ -231,6 +235,7 @@ if __name__ == '__main__':
             # do trainval
             trainval(exp_dict=exp_dict,
                     savedir_base=args.savedir_base,
+                    datadir=args.datadir,
                     reset=args.reset,
                     num_workers=args.num_workers,
-                    run_ssl=args.run_ssl)
+                    checkpoint_path=args.checkpoint_path)

@@ -63,12 +63,13 @@ pretrained_weights_root = [
                             # "/mnt/datasets/public/research/adaptron_laplace/logs_borgy_finetune_haven",
                             ]
 for dataset in [miniimagenet, cub,  tiered_imagenet,  ]:
+    EXP_GROUPS['ssl_%s' % dataset['dataset']] = []
     for backbone in [resnet12, conv4, wrn]:
         for norm_prop in [1]:
                 for shot in [5]:
                     for alpha in [0.2]:
                         for w in pretrained_weights_root:
-                            EXP_GROUPS['ssl'] += [{
+                            EXP_GROUPS['ssl_%s' % dataset['dataset']] += [{
                                                     "model": backbone,
                                                         
                                                         # Hardware
@@ -81,7 +82,7 @@ for dataset in [miniimagenet, cub,  tiered_imagenet,  ]:
                                                         "val_iters": 600,
                                                         "test_iters": 600,
                                                         "tasks_per_batch": 1,
-                                                        "pretrained_weights_root": w,
+                                                        # "pretrained_weights_root": w,
 
                                                         # Model
                                                         "dropout": 0.1,
