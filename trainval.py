@@ -109,11 +109,16 @@ def trainval(exp_dict, savedir_base, datadir, reset=False,
                                  exp_dict=exp_dict)
     # load model checkpoint
     if  exp_dict.get('checkpoint_exp_id'):
-        checkpoint_path = os.path.join(savedir_base, 
-                                        exp_dict['checkpoint_exp_id'], 
+        checkpoint_path = os.path.join(exp_dict['checkpoint_exp_id'], 
                                        'checkpoint_best.pth')
+        if not os.path.exists(checkpoint_path):
+            checkpoint_path = os.path.join(exp_dict['checkpoint_exp_id'], 
+                                       'checkpoint.pth')
     if checkpoint_path:
         s_path = os.path.join(os.path.dirname(checkpoint_path), 'score_list_best.pkl')
+        if not os.path.exists(s_path):
+            s_path = os.path.join(exp_dict['checkpoint_exp_id'], 
+                                       'score_list.pkl')
         print('Loaded checkpoint from exp_id: %s' % 
           os.path.split(os.path.dirname(checkpoint_path))[-1]
         )
@@ -218,16 +223,21 @@ if __name__ == '__main__':
     if args.run_jobs:
         # launch jobs
         from haven import haven_jobs as hjb
-        import user_config
+        job_config = {'volume': ['/mnt:/mnt'],
+                'image': 'images.borgy.elementai.net/issam/main',
+                'bid': '9000',
+                'restartable': '1',
+                'gpu': '1',
+                'mem': '30',
+                'cpu': '2'}
         run_command = ('python trainval.py -ei <exp_id> -sb %s'
-                        ' -d %s -s %s' %  
-                       (args.savedir_base, args.datadir,
-                        args.run_ssl))
+                        ' ' %  
+                       (args.savedir_base))
         hjb.run_exp_list_jobs(exp_list, 
                             savedir_base=args.savedir_base, 
                             workdir=os.path.dirname(os.path.realpath(__file__)),
                             run_command=run_command,
-                            job_config=user_config.job_config)
+                            job_config=job_config)
 
     else:
         # run experiments

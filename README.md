@@ -1,10 +1,13 @@
-## Embedding Propagation: Smoother Manifold for Few-Shot Classification 
+
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 
 <h1 align="center">Embedding Propagation </h1>
 <h5 align="center">Smoother Manifold for Few-Shot Classification <a href="https://arxiv.org/abs/2003.04151">[Paper]</a> </h5> 
 
-The goal of embedding propagation is to regularize your features so that generalization performance is improved.
+
+
+Embedding propagation can be used to regularize the intermediate features so that generalization performance is improved.
 
 ![](embedding_prop.jpeg)
 
