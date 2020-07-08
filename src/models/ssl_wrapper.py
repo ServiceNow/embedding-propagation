@@ -25,7 +25,7 @@ from .base_ssl import predict_methods as pm
 class SSLWrapper(BaseWrapper):
     """Trains a model using an episodic scheme on multiple GPUs"""
 
-    def __init__(self, model, n_classes, exp_dict):
+    def __init__(self, model, n_classes, exp_dict, pretrained_savedir=None):
         """ Constructor
         Args:
             model: architecture to train
@@ -45,86 +45,11 @@ class SSLWrapper(BaseWrapper):
 
         best_accuracy = -1 
         self.label = exp_dict['model']['backbone'] + "_" + exp_dict['dataset_test'].split('_')[1].replace('-imagenet','')
+        
+        if pretrained_savedir is None:
+            # find the best checkpoint
+            print()
 
-        if 'pretrained_weights_root' not in self.exp_dict:
-            self.best_accuracy = -1
-
-        elif self.exp_dict["pretrained_weights_root"] == 'tinder':
-            best_scores = np.load('/mnt/datasets/public/research/adaptron_laplace/best_scores.npy', allow_pickle=True)
-            for r in best_scores:
-                backbone_best = r[3]
-                dataset_best = r[4]
-                savedir_best = r[-1]
-                best_accuracy = r[0]
-                shot_best = r[2]
-                if (exp_dict['model']['backbone'] == backbone_best and
-                    exp_dict['dataset_test'] == dataset_best and
-                    5 ==  shot_best
-                    ):
-                    self.best_accuracy = best_accuracy
-                    self.model.load_state_dict(torch.load(os.path.join(savedir_best, 'checkpoint_best.pth'))['model'])
-
-                    break
-
-        elif self.exp_dict["pretrained_weights_root"] == 'csv':
-            best_scores = np.load('/mnt/datasets/public/research/adaptron_laplace/best_scores.npy', allow_pickle=True)
-            for r in best_scores:
-                backbone_best = r[3]
-                dataset_best = r[4]
-                savedir_best = r[-1]
-                best_accuracy = r[0]
-                shot_best = r[2]
-                if (exp_dict['model']['backbone'] == backbone_best and
-                    exp_dict['dataset_test'] == dataset_best and
-                    exp_dict['support_size_test'] ==  shot_best
-                    ):
-                    self.best_accuracy = best_accuracy
-                    self.model.load_state_dict(torch.load(os.path.join(savedir_best, 'checkpoint_best.pth'))['model'])
-
-                    break
-            
-        elif self.exp_dict["pretrained_weights_root"] == 'hdf5':
-            fdir = '/mnt/datasets/public/research/adaptron_laplace/embeddings/finetuned'
-            fpos = "%s_1shot_fine_*/test.h5" % (self.label)
-            
-            embeddings_fname = glob.glob(os.path.join(fdir, fpos))[0]
-            self.best_accuracy = float(embeddings_fname.split('/')[-2].split('_')[-1]) / 100.
-            self.sampler = oracle.Sampler(
-                    embeddings_fname=embeddings_fname, n_classes=exp_dict['classes_test'],
-                    distract_flag=exp_dict.get('distract_flag', False))
-            
-        elif self.exp_dict["pretrained_weights_root"] is not None:
-            for exp_hash in os.listdir(self.exp_dict['pretrained_weights_root']):
-                base_path = os.path.join(self.exp_dict['pretrained_weights_root'], exp_hash)
-                exp_dict_path = os.path.join(base_path, 'exp_dict.json')
-                if not os.path.exists(exp_dict_path):
-                    continue
-                loaded_exp_dict = haven.load_json(exp_dict_path)
-                pkl_path = os.path.join(base_path, 'score_list_best.pkl')
-                if not os.path.exists(pkl_path):
-                    continue
-                if (loaded_exp_dict["model"]["name"] == 'finetuning' and 
-                        loaded_exp_dict["dataset_train"].split('_')[-1] == exp_dict["dataset_train"].split('_')[-1] and 
-                        loaded_exp_dict["model"]["backbone"] == exp_dict['model']["backbone"] and
-                        loaded_exp_dict["labelprop_alpha"] == exp_dict["labelprop_alpha"] and
-                        loaded_exp_dict["labelprop_scale"] == exp_dict["labelprop_scale"] and
-                        loaded_exp_dict["support_size_train"] == exp_dict["support_size_train"]):
-                    accuracy = haven.load_pkl(pkl_path)[-1]["val_accuracy"]
-                    try:
-                        self.model.load_state_dict(torch.load(os.path.join(base_path, 'checkpoint_best.pth'))['model'], strict=False)
-                        if accuracy > best_accuracy:
-                            best_path = os.path.join(base_path, 'checkpoint_best.pth')
-                            best_accuracy = accuracy
-                            best_score_list = haven.load_pkl(pkl_path)
-                    except Exception as e:
-                        print(str(e))
-            assert(best_accuracy > 0.1)
-            self.best_accuracy = best_score_list[-1]['test_accuracy']
-            print("Finetuning %s with original accuracy : %f" %(base_path, best_accuracy))
-            self.model.load_state_dict(torch.load(best_path)['model'], strict=False)
-            
-        else:
-            raise ValueError('weights are not defined')
         self.acc_sum = 0.0
         self.n_count = 0
         self.model.cuda()
