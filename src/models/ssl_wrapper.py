@@ -12,9 +12,9 @@ import pandas as pd
 import torch.nn.functional as F
 import tqdm
 from src.tools.meters import BasicMeter
-# from src.modules.distances import standarized_label_prop, _propagate, prototype_distance
+from src.modules.distances import standarized_label_prop, _propagate, prototype_distance
 from .base_wrapper import BaseWrapper
-from haven import haven_utils as haven
+from haven import haven_utils as hu
 import glob
 from scipy.stats import sem, t
 import shutil as sh
@@ -25,7 +25,7 @@ from .base_ssl import predict_methods as pm
 class SSLWrapper(BaseWrapper):
     """Trains a model using an episodic scheme on multiple GPUs"""
 
-    def __init__(self, model, n_classes, exp_dict, pretrained_savedir=None):
+    def __init__(self, model, n_classes, exp_dict, pretrained_savedir=None, savedir_base=None):
         """ Constructor
         Args:
             model: architecture to train
@@ -45,11 +45,52 @@ class SSLWrapper(BaseWrapper):
 
         best_accuracy = -1 
         self.label = exp_dict['model']['backbone'] + "_" + exp_dict['dataset_test'].split('_')[1].replace('-imagenet','')
-        
+        print('=============')
+        print('dataset:', exp_dict["dataset_train"].split('_')[-1]) 
+        print('backbone:', exp_dict['model']["backbone"])
+        print('n_classes:', exp_dict['n_classes'])
+        print('support_size_train:', exp_dict['support_size_train'])
+
+
         if pretrained_savedir is None:
             # find the best checkpoint
-            print()
+            if exp_dict['embedding_prop'] == False:
+                savedir_base = '/mnt/projects/vision_prototypes/embedding_propagation/david_logs/'
+            else:
+                savedir_base = '/mnt/datasets/public/research/adaptron_laplace/logs_borgy_finetune_haven_hparams'
+            for exp_hash in os.listdir(savedir_base):
+                base_path = os.path.join(savedir_base, exp_hash)
+                exp_dict_path = os.path.join(base_path, 'exp_dict.json')
+                if not os.path.exists(exp_dict_path):
+                    continue
+                loaded_exp_dict = hu.load_json(exp_dict_path)
+                pkl_path = os.path.join(base_path, 'score_list_best.pkl')
+                # 'd7717cd0eb06f9a55ffb05a751902784'
+                if exp_dict['support_size_train'] in [2,3,4]:
+                    support_size_needed = 1
+                else:
+                    support_size_needed = exp_dict['support_size_train']
 
+                if (loaded_exp_dict["model"]["name"] == 'finetuning' and 
+                    loaded_exp_dict["dataset_train"].split('_')[-1] == exp_dict["dataset_train"].split('_')[-1] and 
+                    loaded_exp_dict["model"]["backbone"] == exp_dict['model']["backbone"] and
+                    loaded_exp_dict['n_classes'] == exp_dict["n_classes"] and
+                    loaded_exp_dict['support_size_train'] == support_size_needed):
+                    
+                    
+                    model_path = os.path.join(base_path, 'checkpoint_best.pth')
+                    if os.path.exists(model_path):
+                        accuracy = hu.load_pkl(pkl_path)[-1]["val_accuracy"]
+                        self.model.load_state_dict(torch.load(model_path)['model'], strict=False)
+                        if accuracy > best_accuracy:
+                            best_path = os.path.join(base_path, 'checkpoint_best.pth')
+                            best_accuracy = accuracy
+                   
+
+            assert(best_accuracy > 0.1)
+            print("Finetuning %s with original accuracy : %f" %(base_path, best_accuracy))
+            self.model.load_state_dict(torch.load(best_path)['model'], strict=False)
+        self.best_accuracy = best_accuracy
         self.acc_sum = 0.0
         self.n_count = 0
         self.model.cuda()

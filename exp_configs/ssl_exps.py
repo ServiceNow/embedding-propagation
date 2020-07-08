@@ -1,6 +1,9 @@
 import os
 from haven import haven_utils as hu
 
+import os
+from haven import haven_utils as hu
+
 conv4 = {
     "name": "ssl",
     'backbone':'conv4',
@@ -37,86 +40,169 @@ miniimagenet = {
     "dataset_val": "episodic_miniimagenet",
     "dataset_test": "episodic_miniimagenet",
     "n_classes": 64,
+    'data_root':'/mnt/datasets/public/mini-imagenet/'
 }
 
+tiered_imagenet = {
+    "dataset": "tiered-imagenet",
+    "n_classes": 351,
+    "dataset_train": "episodic_tiered-imagenet",
+    "dataset_val": "episodic_tiered-imagenet",
+    "dataset_test": "episodic_tiered-imagenet",
+    'data_root':'/mnt/datasets/public/research/tiered-imagenet'
+}
 
-EXP_GROUPS = {"ssl": []}
+cub = {
+    "dataset": "cub",
+    "n_classes": 100,
+    "dataset_train": "episodic_cub",
+    "dataset_val": "episodic_cub",
+    "dataset_test": "episodic_cub",
+    'data_root':'/mnt/datasets/public/research/CUB_200_2011'
+}
 
+EXP_GROUPS = {}
+
+# embedding_prop = True
 
 EXP_GROUPS['ssl'] = []
-for dataset in [miniimagenet]:
+# 12 exps
+for dataset in [miniimagenet, tiered_imagenet]:
     for backbone in [resnet12, conv4, wrn]:
+        for embedding_prop in [True, False]:
             for shot in [1, 5]:
                 for alpha in [0.2]:
-                    for e in exp_id_list:
-                        exp_dict = hu.load_json(os.path.join(savedir_base, e, 'exp_dict.json'))
-                        if (exp_dict['model']['backbone'] != backbone['backbone'] or 
-                            exp_dict['dataset_train'] != dataset['dataset_train'] or
-                            exp_dict['n_classes'] != dataset["n_classes"] or
-                            exp_dict['support_size_train'] != shot
-                            ):
-                            continue
-                        EXP_GROUPS['ssl'] += [{
+                    EXP_GROUPS['ssl'] += [{
+                        'dataset_train_root': dataset["data_root"],
+                        'dataset_val_root': dataset["data_root"],
+                        'dataset_test_root': dataset["data_root"],
+                                            "model": backbone,
+                                                
+                                            # Hardware
+                                            "ngpu": 1,
+                                            "random_seed": 42,
+
+                                            # Optimization
+                                            "batch_size": 1,
+                                            "train_iters": 10,
+                                            "test_iters": 600,
+                                            "tasks_per_batch": 1,
+
+                                            # Model
+                                            "dropout": 0.1,
+                                            "avgpool": True,
+
+                                            # Data
+                                            'n_classes': dataset["n_classes"],
+                                            "collate_fn": "identity",
+                                            "transform_train": backbone["transform_train"],
+                                            "transform_val": backbone["transform_val"],
+                                            "transform_test": backbone["transform_test"],
+
+                                            "dataset_train": dataset["dataset_train"],
+                                            "classes_train": 5,
+                                            "support_size_train": shot,
+                                            "query_size_train": 15,
+                                            "unlabeled_size_train": 0,
+
+                                            "dataset_val": dataset["dataset_val"],
+                                            "classes_val": 5,
+                                            "support_size_val": shot,
+                                            "query_size_val": 15,
+                                            "unlabeled_size_val": 0,
+
+                                            "dataset_test": dataset["dataset_test"],
+                                            "classes_test": 5,
+                                            "support_size_test": shot,
+                                            "query_size_test": 15,
+                                            "unlabeled_size_test": 100,
+                                            "predict_method":"double_label_prop",
+
+                                            # Hparams
+                                            "embedding_prop" : embedding_prop,
+                                            "few_shot_weight": 1,
+                                            "classification_weight": 0.5,
+                                            "rotation_weight": 0,
+                                            "active_size": 0,
+                                            "distance_type": "labelprop",
+                                            "kernel_type": "rbf",
+                                            "kernel_standarization": "all",
+                                            "kernel_bound": "",
+                                            "labelprop_alpha": alpha, 
+                                            "labelprop_scale": 1,
+                                            "norm_prop": 1,
+                                            "rotation_labels": [0],
+                                            }]
+
+# 24 exps
+EXP_GROUPS['ssl_tinder'] = []
+for dataset in [tiered_imagenet, miniimagenet]:
+    for backbone in [conv4, resnet12, wrn]:
+        for embedding_prop in [True, False]:
+            for norm_prop in [1]:
+                for shot, ust in zip([1,2,3], 
+                                     [4,3,2]):
+                    for alpha in [0.2]:
+                        EXP_GROUPS['ssl_tinder'] += [{
                             'dataset_train_root': dataset["data_root"],
                             'dataset_val_root': dataset["data_root"],
                             'dataset_test_root': dataset["data_root"],
+
                                                 "model": backbone,
-                                                'checkpoint_exp_id':os.path.join(savedir_base, e),
                                                     
-                                                # Hardware
-                                                "ngpu": 1,
-                                                "random_seed": 42,
+                                                    # Hardware
+                                                    "ngpu": 1,
+                                                    "random_seed": 42,
 
-                                                # Optimization
-                                                "batch_size": 1,
-                                                "train_iters": 10,
-                                                "val_iters": 600,
-                                                "test_iters": 600,
-                                                "tasks_per_batch": 1,
+                                                    # Optimization
+                                                    "batch_size": 1,
+                                                    "train_iters": 10,
+                                                    "val_iters": 600,
+                                                    "test_iters": 600,
+                                                    "tasks_per_batch": 1,
 
-                                                # Model
-                                                "dropout": 0.1,
-                                                "avgpool": True,
+                                                    # Model
+                                                    "dropout": 0.1,
+                                                    "avgpool": True,
 
-                                                # Data
-                                                'n_classes': dataset["n_classes"],
-                                                "collate_fn": "identity",
-                                                "transform_train": backbone["transform_train"],
-                                                "transform_val": backbone["transform_val"],
-                                                "transform_test": backbone["transform_test"],
+                                                    # Data
+                                                    'n_classes': dataset["n_classes"],
+                                                    "collate_fn": "identity",
+                                                    "transform_train": backbone["transform_train"],
+                                                    "transform_val": backbone["transform_val"],
+                                                    "transform_test": backbone["transform_test"],
 
-                                                "dataset_train": dataset["dataset_train"],
-                                                "classes_train": 5,
-                                                "support_size_train": shot,
-                                                "query_size_train": 15,
-                                                "unlabeled_size_train": 0,
+                                                    "dataset_train": dataset["dataset_train"],
+                                                    "classes_train": 5,
+                                                    "support_size_train": shot,
+                                                    "query_size_train": 15,
+                                                    "unlabeled_size_train": 0,
 
-                                                "dataset_val": dataset["dataset_val"],
-                                                "classes_val": 5,
-                                                "support_size_val": shot,
-                                                "query_size_val": 15,
-                                                "unlabeled_size_val": 0,
+                                                    "dataset_val": dataset["dataset_val"],
+                                                    "classes_val": 5,
+                                                    "support_size_val": shot,
+                                                    "query_size_val": 15,
+                                                    "unlabeled_size_val": 0,
 
-                                                "dataset_test": dataset["dataset_test"],
-                                                "classes_test": 5,
-                                                "support_size_test": shot,
-                                                "query_size_test": 15,
-                                                "unlabeled_size_test": 100,
-                                                "predict_method":"double_label_prop",
+                                                    "dataset_test": dataset["dataset_test"],
+                                                    "classes_test": 5,
+                                                    "support_size_test": shot,
+                                                    "query_size_test": 15,
+                                                    "unlabeled_size_test": ust,
+                                                    "predict_method":"double_label_prop",
 
-                                                # Hparams
-                                                "embedding_prop" : False,
-                                                "few_shot_weight": 1,
-                                                "classification_weight": 0.5,
-                                                "rotation_weight": 0,
-                                                "active_size": 0,
-                                                "distance_type": "labelprop",
-                                                "kernel_type": "rbf",
-                                                "kernel_standarization": "all",
-                                                "kernel_bound": "",
-                                                "labelprop_alpha": alpha, 
-                                                "labelprop_scale": 1,
-                                                "norm_prop": 1,
-                                                "rotation_labels": [0],
-                                                }]
-
+                                                    # Hparams
+                                                    "embedding_prop" : embedding_prop,
+                                                    "few_shot_weight": 1,
+                                                    "classification_weight": 0.5,
+                                                    "rotation_weight": 0,
+                                                    "active_size": 0,
+                                                    "distance_type": "labelprop",
+                                                    "kernel_type": "rbf",
+                                                    "kernel_standarization": "all",
+                                                    "kernel_bound": "",
+                                                    "labelprop_alpha": alpha, 
+                                                    "labelprop_scale": 1,
+                                                    "norm_prop": norm_prop,
+                                                    "rotation_labels": [0],
+                                                    }]

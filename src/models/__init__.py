@@ -6,7 +6,7 @@ import pickle, os
 import numpy as np
 from . import pretraining, finetuning, ssl_wrapper
 
-def get_model(model_name, backbone, n_classes, exp_dict, pretrained_savedir=None):
+def get_model(model_name, backbone, n_classes, exp_dict, pretrained_savedir=None, savedir_base=None):
     if model_name == "pretraining":
         model = pretraining.PretrainWrapper(backbone, n_classes, exp_dict)
 
@@ -14,7 +14,7 @@ def get_model(model_name, backbone, n_classes, exp_dict, pretrained_savedir=None
         model =  finetuning.FinetuneWrapper(backbone, n_classes, exp_dict)
         
     elif model_name == "ssl":
-        model =  ssl_wrapper.SSLWrapper(backbone, n_classes, exp_dict)
+        model =  ssl_wrapper.SSLWrapper(backbone, n_classes, exp_dict, savedir_base=savedir_base)
 
     else:
         raise ValueError('model does not exist...')

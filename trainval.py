@@ -61,7 +61,7 @@ def trainval(exp_dict, savedir_base, datadir, reset=False,
                 classes=exp_dict["classes_val"],
                 support_size=exp_dict["support_size_val"],
                 query_size=exp_dict["query_size_val"], 
-                n_iters=exp_dict["val_iters"],
+                n_iters=exp_dict.get("val_iters", None),
                 unlabeled_size=exp_dict["unlabeled_size_val"])
 
     test_set = datasets.get_dataset(dataset_name=exp_dict["dataset_test"],
@@ -107,7 +107,8 @@ def trainval(exp_dict, savedir_base, datadir, reset=False,
     model = models.get_model(model_name=exp_dict["model"]['name'], backbone=backbone, 
                                  n_classes=exp_dict["n_classes"],
                                  exp_dict=exp_dict,
-                                 pretrained_savedir=pretrained_savedir)
+                                 pretrained_savedir=pretrained_savedir,
+                                 savedir_base=savedir_base)
     
     # Pretrain or Fine-tune or run SSL
     if exp_dict["model"]['name'] == 'ssl':
