@@ -12,20 +12,20 @@ import pandas as pd
 import torch.nn.functional as F
 import tqdm
 from src.tools.meters import BasicMeter
-# from src.modules.distances import standarized_label_prop, _propagate, prototype_distance
+from src.modules.distances import standarized_label_prop, _propagate, prototype_distance
 from .base_wrapper import BaseWrapper
-from haven import haven_utils as haven
+from haven import haven_utils as hu
 import glob
 from scipy.stats import sem, t
 import shutil as sh
 from .base_ssl import selection_methods as sm
 from .base_ssl import predict_methods as pm
-
+from embedding_propagation import EmbeddingPropagation
 
 class SSLWrapper(BaseWrapper):
     """Trains a model using an episodic scheme on multiple GPUs"""
 
-    def __init__(self, model, n_classes, exp_dict):
+    def __init__(self, model, n_classes, exp_dict, pretrained_savedir=None, savedir_base=None):
         """ Constructor
         Args:
             model: architecture to train
@@ -45,105 +45,64 @@ class SSLWrapper(BaseWrapper):
 
         best_accuracy = -1 
         self.label = exp_dict['model']['backbone'] + "_" + exp_dict['dataset_test'].split('_')[1].replace('-imagenet','')
+        print('=============')
+        print('dataset:', exp_dict["dataset_train"].split('_')[-1]) 
+        print('backbone:', exp_dict['model']["backbone"])
+        print('n_classes:', exp_dict['n_classes'])
+        print('support_size_train:', exp_dict['support_size_train'])
 
-        if 'pretrained_weights_root' not in self.exp_dict:
-            self.best_accuracy = -1
 
-        elif self.exp_dict["pretrained_weights_root"] == 'tinder':
-            best_scores = np.load('/mnt/datasets/public/research/adaptron_laplace/best_scores.npy', allow_pickle=True)
-            for r in best_scores:
-                backbone_best = r[3]
-                dataset_best = r[4]
-                savedir_best = r[-1]
-                best_accuracy = r[0]
-                shot_best = r[2]
-                if (exp_dict['model']['backbone'] == backbone_best and
-                    exp_dict['dataset_test'] == dataset_best and
-                    5 ==  shot_best
-                    ):
-                    self.best_accuracy = best_accuracy
-                    self.model.load_state_dict(torch.load(os.path.join(savedir_best, 'checkpoint_best.pth'))['model'])
-
-                    break
-
-        elif self.exp_dict["pretrained_weights_root"] == 'csv':
-            best_scores = np.load('/mnt/datasets/public/research/adaptron_laplace/best_scores.npy', allow_pickle=True)
-            for r in best_scores:
-                backbone_best = r[3]
-                dataset_best = r[4]
-                savedir_best = r[-1]
-                best_accuracy = r[0]
-                shot_best = r[2]
-                if (exp_dict['model']['backbone'] == backbone_best and
-                    exp_dict['dataset_test'] == dataset_best and
-                    exp_dict['support_size_test'] ==  shot_best
-                    ):
-                    self.best_accuracy = best_accuracy
-                    self.model.load_state_dict(torch.load(os.path.join(savedir_best, 'checkpoint_best.pth'))['model'])
-
-                    break
-            
-        elif self.exp_dict["pretrained_weights_root"] == 'hdf5':
-            fdir = '/mnt/datasets/public/research/adaptron_laplace/embeddings/finetuned'
-            fpos = "%s_1shot_fine_*/test.h5" % (self.label)
-            
-            embeddings_fname = glob.glob(os.path.join(fdir, fpos))[0]
-            self.best_accuracy = float(embeddings_fname.split('/')[-2].split('_')[-1]) / 100.
-            self.sampler = oracle.Sampler(
-                    embeddings_fname=embeddings_fname, n_classes=exp_dict['classes_test'],
-                    distract_flag=exp_dict.get('distract_flag', False))
-            
-        elif self.exp_dict["pretrained_weights_root"] is not None:
-            for exp_hash in os.listdir(self.exp_dict['pretrained_weights_root']):
-                base_path = os.path.join(self.exp_dict['pretrained_weights_root'], exp_hash)
+        if pretrained_savedir is None:
+            # find the best checkpoint
+            if exp_dict['embedding_prop'] == False:
+                savedir_base = '/mnt/projects/vision_prototypes/embedding_propagation/david_logs/'
+            else:
+                savedir_base = '/mnt/datasets/public/research/adaptron_laplace/logs_borgy_finetune_haven_hparams'
+            for exp_hash in os.listdir(savedir_base):
+                base_path = os.path.join(savedir_base, exp_hash)
                 exp_dict_path = os.path.join(base_path, 'exp_dict.json')
                 if not os.path.exists(exp_dict_path):
                     continue
-                loaded_exp_dict = haven.load_json(exp_dict_path)
+                loaded_exp_dict = hu.load_json(exp_dict_path)
                 pkl_path = os.path.join(base_path, 'score_list_best.pkl')
-                if not os.path.exists(pkl_path):
-                    continue
+                # 'd7717cd0eb06f9a55ffb05a751902784'
+                if exp_dict['support_size_train'] in [2,3,4]:
+                    support_size_needed = 1
+                else:
+                    support_size_needed = exp_dict['support_size_train']
+
                 if (loaded_exp_dict["model"]["name"] == 'finetuning' and 
-                        loaded_exp_dict["dataset_train"].split('_')[-1] == exp_dict["dataset_train"].split('_')[-1] and 
-                        loaded_exp_dict["model"]["backbone"] == exp_dict['model']["backbone"] and
-                        loaded_exp_dict["labelprop_alpha"] == exp_dict["labelprop_alpha"] and
-                        loaded_exp_dict["labelprop_scale"] == exp_dict["labelprop_scale"] and
-                        loaded_exp_dict["support_size_train"] == exp_dict["support_size_train"]):
-                    accuracy = haven.load_pkl(pkl_path)[-1]["val_accuracy"]
+                    loaded_exp_dict["dataset_train"].split('_')[-1] == exp_dict["dataset_train"].split('_')[-1] and 
+                    loaded_exp_dict["model"]["backbone"] == exp_dict['model']["backbone"] and
+                    loaded_exp_dict['n_classes'] == exp_dict["n_classes"] and
+                    loaded_exp_dict['support_size_train'] == support_size_needed,
+                    loaded_exp_dict["embedding_prop"] == exp_dict["embedding_prop"]):
+                    
+                    
+                    model_path = os.path.join(base_path, 'checkpoint_best.pth')
                     try:
-                        self.model.load_state_dict(torch.load(os.path.join(base_path, 'checkpoint_best.pth'))['model'], strict=False)
+                        accuracy = hu.load_pkl(pkl_path)[-1]["val_accuracy"]
+                        self.model.load_state_dict(torch.load(model_path)['model'], strict=False)
                         if accuracy > best_accuracy:
                             best_path = os.path.join(base_path, 'checkpoint_best.pth')
                             best_accuracy = accuracy
-                            best_score_list = haven.load_pkl(pkl_path)
-                    except Exception as e:
-                        print(str(e))
+                    except:
+                        print("Err")
+                   
+
             assert(best_accuracy > 0.1)
-            self.best_accuracy = best_score_list[-1]['test_accuracy']
             print("Finetuning %s with original accuracy : %f" %(base_path, best_accuracy))
             self.model.load_state_dict(torch.load(best_path)['model'], strict=False)
-            
-        else:
-            raise ValueError('weights are not defined')
+        self.best_accuracy = best_accuracy
         self.acc_sum = 0.0
         self.n_count = 0
         self.model.cuda()
 
     def get_embeddings(self, embeddings, support_size, query_size, nclasses):
         b, c = embeddings.size()
-        embeddings = embeddings.view(support_size + query_size, nclasses, c)
         
         if self.exp_dict["embedding_prop"] == True:
-            support_labels = torch.arange(nclasses, device=embeddings.device).view(1, nclasses).repeat(support_size, 1)
-            one_hot_labels = torch.zeros(1, b, nclasses, device=support_labels.device, dtype=torch.float)
-            to_one_hot = torch.eye(nclasses, dtype=torch.float, device=support_labels.device)
-            one_hot_labels[:, :(support_size * nclasses), :] = to_one_hot[support_labels.view(-1)].view(1, -1, nclasses)
-
-            logits, propagator = standarized_label_prop(embeddings.view(1, -1, c),
-                                                        one_hot_labels.view(1, -1, 
-                                                        nclasses))
-            embeddings = _propagate(embeddings.view(1, -1, c), propagator)
-
+            embeddings = EmbeddingPropagation()(embeddings)
         return embeddings.view(b, c)
 
     def get_episode_dict(self, batch):

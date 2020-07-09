@@ -6,18 +6,33 @@ import pickle, os
 import numpy as np
 from . import pretraining, finetuning, ssl_wrapper
 
-def get_model(model_name, backbone, n_classes, exp_dict):
+def get_model(model_name, backbone, n_classes, exp_dict, pretrained_savedir=None, savedir_base=None):
     if model_name == "pretraining":
-        return pretraining.PretrainWrapper(backbone, n_classes, exp_dict)
+        model = pretraining.PretrainWrapper(backbone, n_classes, exp_dict)
 
     elif model_name == "finetuning":
-        return finetuning.FinetuneWrapper(backbone, n_classes, exp_dict)
+        model =  finetuning.FinetuneWrapper(backbone, n_classes, exp_dict)
         
     elif model_name == "ssl":
-        return ssl_wrapper.SSLWrapper(backbone, n_classes, exp_dict)
+        model =  ssl_wrapper.SSLWrapper(backbone, n_classes, exp_dict, savedir_base=savedir_base)
 
     else:
         raise ValueError('model does not exist...')
+
+    # load pretrained model
+    if pretrained_savedir:
+        s_path = os.path.join(os.path.dirname(pretrained_savedir), 'score_list_best.pkl')
+        if not os.path.exists(s_path):
+            s_path = os.path.join(exp_dict['checkpoint_exp_id'], 
+                                       'score_list.pkl')
+        print('Loaded checkpoint from exp_id: %s' % 
+          os.path.split(os.path.dirname(pretrained_savedir))[-1]
+        )
+        print('Fine-tuned accuracy: %.3f' % hu.load_pkl(s_path)[-1]['test_accuracy'])
+        model.model.load_state_dict(torch.load(pretrained_savedir)['model'])
+
+    return model 
+
 # ===============================================
 # Trainers
 def train_on_loader(model, train_loader):

@@ -24,7 +24,7 @@ from haven import haven_jupyter as hj
 
 
 def trainval(exp_dict, savedir_base, datadir, reset=False, 
-            num_workers=0, checkpoint_path=None):
+            num_workers=0, pretrained_savedir=None):
     # bookkeeping
     # ---------------
 
@@ -61,7 +61,7 @@ def trainval(exp_dict, savedir_base, datadir, reset=False,
                 classes=exp_dict["classes_val"],
                 support_size=exp_dict["support_size_val"],
                 query_size=exp_dict["query_size_val"], 
-                n_iters=exp_dict["val_iters"],
+                n_iters=exp_dict.get("val_iters", None),
                 unlabeled_size=exp_dict["unlabeled_size_val"])
 
     test_set = datasets.get_dataset(dataset_name=exp_dict["dataset_test"],
@@ -106,25 +106,11 @@ def trainval(exp_dict, savedir_base, datadir, reset=False,
     backbone = backbones.get_backbone(backbone_name=exp_dict['model']["backbone"], exp_dict=exp_dict)
     model = models.get_model(model_name=exp_dict["model"]['name'], backbone=backbone, 
                                  n_classes=exp_dict["n_classes"],
-                                 exp_dict=exp_dict)
-    # load model checkpoint
-    if  exp_dict.get('checkpoint_exp_id'):
-        checkpoint_path = os.path.join(exp_dict['checkpoint_exp_id'], 
-                                       'checkpoint_best.pth')
-        if not os.path.exists(checkpoint_path):
-            checkpoint_path = os.path.join(exp_dict['checkpoint_exp_id'], 
-                                       'checkpoint.pth')
-    if checkpoint_path:
-        s_path = os.path.join(os.path.dirname(checkpoint_path), 'score_list_best.pkl')
-        if not os.path.exists(s_path):
-            s_path = os.path.join(exp_dict['checkpoint_exp_id'], 
-                                       'score_list.pkl')
-        print('Loaded checkpoint from exp_id: %s' % 
-          os.path.split(os.path.dirname(checkpoint_path))[-1]
-        )
-        print('Fine-tuned accuracy: %.3f' % hu.load_pkl(s_path)[-1]['test_accuracy'])
-        model.model.load_state_dict(torch.load(checkpoint_path)['model'])
+                                 exp_dict=exp_dict,
+                                 pretrained_savedir=pretrained_savedir,
+                                 savedir_base=savedir_base)
     
+    # Pretrain or Fine-tune or run SSL
     if exp_dict["model"]['name'] == 'ssl':
         # runs the SSL experiments
         score_list_path = os.path.join(savedir, 'score_list.pkl')
@@ -195,9 +181,15 @@ if __name__ == '__main__':
     parser.add_argument('-sb', '--savedir_base', required=True)
     parser.add_argument('-d', '--datadir', default='')
     parser.add_argument('-r', '--reset',  default=0, type=int)
+<<<<<<< HEAD
     parser.add_argument('-ei', '--exp_id', type=str, default=None)
     parser.add_argument('-j', '--run_jobs', type=int, default=None)
     parser.add_argument('-cp', '--checkpoint_path', default=None)
+=======
+    parser.add_argument('-ei', '--exp_id', default=None)
+    parser.add_argument('-j', '--run_jobs', default=None)
+    parser.add_argument('-ps', '--pretrained_savedir', default=None)
+>>>>>>> camera
     parser.add_argument('-nw', '--num_workers', default=0, type=int)
 
     args = parser.parse_args()
@@ -248,4 +240,4 @@ if __name__ == '__main__':
                     datadir=args.datadir,
                     reset=args.reset,
                     num_workers=args.num_workers,
-                    checkpoint_path=args.checkpoint_path)
+                    pretrained_savedir=args.pretrained_savedir)

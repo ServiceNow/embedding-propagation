@@ -9,23 +9,23 @@ from functools import partial
 # from tools.meters import BasicMeter
 # from train import TensorLogger
 import sys
+from embedding_propagation import LabelPropagation
 
 def label_prop_predict(episode_dict, double_flag=False):
     S = torch.from_numpy(episode_dict["support_so_far"]["samples"]).cuda()
     S_labels = torch.from_numpy(episode_dict["support_so_far"]["labels"]).cuda()
+    nclasses = int(S_labels.max() + 1)
+    Q_labels = torch.zeros(episode_dict["query"]["samples"].shape[0], dtype=S_labels.dtype).cuda() + nclasses
+    U_labels = torch.zeros(episode_dict["unlabeled"]["samples"].shape[0], dtype=S_labels.dtype).cuda() + nclasses
+    A_labels = torch.cat([S_labels, Q_labels, U_labels], 0)
     Q = torch.from_numpy(episode_dict["query"]["samples"]).cuda()
 
     U = torch.from_numpy(episode_dict["unlabeled"]["samples"]).cuda()
         
-    
-    if double_flag:
-        label_prop = LabelpropDouble(n_classes=episode_dict['n_classes'])
-    else:
-        label_prop = Labelprop(n_classes=episode_dict['n_classes'])
+    lp = LabelPropagation(balanced=True)
 
-    UQ = torch.cat([U, Q], dim=0)
-    label_prop.fit(support_set=S, unlabeled_set=UQ)
-    logits = label_prop.predict(support_labels=S_labels, balanced_flag=True)
+    SUQ = torch.cat([S, U, Q], dim=0)
+    logits = lp(SUQ, A_labels, nclasses)
     logits_query = logits[-Q.shape[0]:]
 
     return logits_query.argmax(dim=1).cpu().numpy()
