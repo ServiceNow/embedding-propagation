@@ -16,12 +16,13 @@ class EmbeddingPropagation(torch.nn.Module):
 
 
 class LabelPropagation(torch.nn.Module):
-    def __init__(self, alpha=0.2, rbf_scale=1, norm_prop=True, apply_log=True):
+    def __init__(self, alpha=0.2, rbf_scale=1, norm_prop=True, apply_log=True, balanced=False):
         super().__init__()
         self.alpha = alpha
         self.rbf_scale = rbf_scale
         self.norm_prop = norm_prop
         self.apply_log = apply_log
+        self.balanced = balanced
 
     def forward(self, x, labels, nclasses, propagator=None):
         """Applies label propagation given a set of embeddings and labels
@@ -38,7 +39,8 @@ class LabelPropagation(torch.nn.Module):
             tuple(Tensor, Tensor) -- Logits and Propagator
         """
         return label_propagation(x, labels, nclasses, self.alpha, self.rbf_scale,
-                                 self.norm_prop, self.apply_log, propagator=propagator)
+                                 self.norm_prop, self.apply_log, propagator=propagator,
+                                 balanced=self.balanced)
 
 
 def get_similarity_matrix(x, rbf_scale):
@@ -60,9 +62,11 @@ def embedding_propagation(x, alpha, rbf_scale, norm_prop, propagator=None):
     return torch.mm(propagator, x)
 
 
-def label_propagation(x, labels, nclasses, alpha, rbf_scale, norm_prop, apply_log, propagator=None, epsilon=1e-6):
+def label_propagation(x, labels, nclasses, alpha, rbf_scale, norm_prop, apply_log, propagator=None, balanced=False, epsilon=1e-6):
     labels = F.one_hot(labels, nclasses + 1)
     labels = labels[:, :nclasses].float()  # the max label is unlabeled
+    if balanced:
+        labels = labels / labels.sum(0, keepdim=True)
     if propagator is None:
         weights = get_similarity_matrix(x, rbf_scale)
         propagator = global_consistency(

@@ -20,7 +20,7 @@ from scipy.stats import sem, t
 import shutil as sh
 from .base_ssl import selection_methods as sm
 from .base_ssl import predict_methods as pm
-
+from embedding_propagation import EmbeddingPropagation
 
 class SSLWrapper(BaseWrapper):
     """Trains a model using an episodic scheme on multiple GPUs"""
@@ -75,16 +75,19 @@ class SSLWrapper(BaseWrapper):
                     loaded_exp_dict["dataset_train"].split('_')[-1] == exp_dict["dataset_train"].split('_')[-1] and 
                     loaded_exp_dict["model"]["backbone"] == exp_dict['model']["backbone"] and
                     loaded_exp_dict['n_classes'] == exp_dict["n_classes"] and
-                    loaded_exp_dict['support_size_train'] == support_size_needed):
+                    loaded_exp_dict['support_size_train'] == support_size_needed,
+                    loaded_exp_dict["embedding_prop"] == exp_dict["embedding_prop"]):
                     
                     
                     model_path = os.path.join(base_path, 'checkpoint_best.pth')
-                    if os.path.exists(model_path):
+                    try:
                         accuracy = hu.load_pkl(pkl_path)[-1]["val_accuracy"]
                         self.model.load_state_dict(torch.load(model_path)['model'], strict=False)
                         if accuracy > best_accuracy:
                             best_path = os.path.join(base_path, 'checkpoint_best.pth')
                             best_accuracy = accuracy
+                    except:
+                        print("Err")
                    
 
             assert(best_accuracy > 0.1)
@@ -97,19 +100,9 @@ class SSLWrapper(BaseWrapper):
 
     def get_embeddings(self, embeddings, support_size, query_size, nclasses):
         b, c = embeddings.size()
-        embeddings = embeddings.view(support_size + query_size, nclasses, c)
         
         if self.exp_dict["embedding_prop"] == True:
-            support_labels = torch.arange(nclasses, device=embeddings.device).view(1, nclasses).repeat(support_size, 1)
-            one_hot_labels = torch.zeros(1, b, nclasses, device=support_labels.device, dtype=torch.float)
-            to_one_hot = torch.eye(nclasses, dtype=torch.float, device=support_labels.device)
-            one_hot_labels[:, :(support_size * nclasses), :] = to_one_hot[support_labels.view(-1)].view(1, -1, nclasses)
-
-            logits, propagator = standarized_label_prop(embeddings.view(1, -1, c),
-                                                        one_hot_labels.view(1, -1, 
-                                                        nclasses))
-            embeddings = _propagate(embeddings.view(1, -1, c), propagator)
-
+            embeddings = EmbeddingPropagation()(embeddings)
         return embeddings.view(b, c)
 
     def get_episode_dict(self, batch):
