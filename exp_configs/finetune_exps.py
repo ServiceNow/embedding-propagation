@@ -81,7 +81,7 @@ for dataset in [miniimagenet, tiered_imagenet, cub]:
                                                         "max_epoch": 200,
                                                         "train_iters": train_iters,
                                                         "val_iters": 600,
-                                                        "test_iters": 600,
+                                                        "test_iters": 1000,
                                                         "tasks_per_batch": 1,
                                                         "pretrained_weights_root": "/mnt/datasets/public/research/adaptron_laplace/logs_borgy_pretrain_haven",
 

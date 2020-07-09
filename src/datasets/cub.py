@@ -1,5 +1,4 @@
 import sys
-sys.path.insert(0, '/home/pau/git/adaptron_laplace/')
 import torchvision
 import torch
 from torch.utils.data import Dataset
@@ -28,7 +27,7 @@ class NonEpisodicCUB(Dataset):
         """
         self.data_root = data_root
         self.split = {"train":"base", "val":"val", "valid":"val", "test":"novel"}[split]
-        with open(os.path.join(self.DATA_ROOT, "few_shot_lists", "%s.json" %self.split), 'r') as infile:
+        with open(os.path.join(self.data_root, "few_shot_lists", "%s.json" %self.split), 'r') as infile:
             self.metadata = json.load(infile)
         self.transforms = transforms
         self.rotation_labels = rotation_labels

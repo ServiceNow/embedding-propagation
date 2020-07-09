@@ -78,7 +78,7 @@ for dataset in [miniimagenet, tiered_imagenet, cub]:
                                         "max_epoch": 200,
                                         "train_iters": 600,
                                         "val_iters": 600,
-                                        "test_iters": 1000,
+                                        "test_iters": 600,
                                         "tasks_per_batch": 1,
 
                                         # Model

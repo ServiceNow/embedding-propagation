@@ -195,8 +195,8 @@ if __name__ == '__main__':
     parser.add_argument('-sb', '--savedir_base', required=True)
     parser.add_argument('-d', '--datadir', default='')
     parser.add_argument('-r', '--reset',  default=0, type=int)
-    parser.add_argument('-ei', '--exp_id', default=None)
-    parser.add_argument('-j', '--run_jobs', default=None)
+    parser.add_argument('-ei', '--exp_id', type=str, default=None)
+    parser.add_argument('-j', '--run_jobs', type=int, default=None)
     parser.add_argument('-cp', '--checkpoint_path', default=None)
     parser.add_argument('-nw', '--num_workers', default=0, type=int)
 
@@ -227,7 +227,7 @@ if __name__ == '__main__':
                 'image': 'images.borgy.elementai.net/issam/main',
                 'bid': '9000',
                 'restartable': '1',
-                'gpu': '1',
+                'gpu': '2',
                 'mem': '30',
                 'cpu': '2'}
         run_command = ('python trainval.py -ei <exp_id> -sb %s'
