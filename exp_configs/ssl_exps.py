@@ -173,7 +173,7 @@ for dataset in [tiered_imagenet, miniimagenet]:
                             "query_size_test": 15,
                             "unlabeled_size_test": ust,
                             "predict_method":"labelprop",
-                            "finetuned_weights_root": "./logs",
+                            "finetuned_weights_root": "./logs/finetuning",
 
                             # Hparams
                             "embedding_prop" : embedding_prop,
