@@ -83,7 +83,7 @@ for dataset in [miniimagenet, tiered_imagenet, cub]:
                                                         "val_iters": 600,
                                                         "test_iters": 1000,
                                                         "tasks_per_batch": 1,
-                                                        "pretrained_weights_root": "./logs",
+                                                        "pretrained_weights_root": "./logs/pretraining",
 
                                                         # Model
                                                         "dropout": 0.1,
