@@ -24,7 +24,7 @@ from haven import haven_jupyter as hj
 
 
 def trainval(exp_dict, savedir_base, datadir, reset=False, 
-            num_workers=0, pretrained_savedir=None):
+            num_workers=0, pretrained_weights_dir=None):
     # bookkeeping
     # ---------------
 
@@ -107,7 +107,7 @@ def trainval(exp_dict, savedir_base, datadir, reset=False,
     model = models.get_model(model_name=exp_dict["model"]['name'], backbone=backbone, 
                                  n_classes=exp_dict["n_classes"],
                                  exp_dict=exp_dict,
-                                 pretrained_savedir=pretrained_savedir,
+                                 pretrained_weights_dir=pretrained_weights_dir,
                                  savedir_base=savedir_base)
     
     # Pretrain or Fine-tune or run SSL
@@ -181,16 +181,10 @@ if __name__ == '__main__':
     parser.add_argument('-sb', '--savedir_base', required=True)
     parser.add_argument('-d', '--datadir', default='')
     parser.add_argument('-r', '--reset',  default=0, type=int)
-<<<<<<< HEAD
     parser.add_argument('-ei', '--exp_id', type=str, default=None)
-    parser.add_argument('-j', '--run_jobs', type=int, default=None)
-    parser.add_argument('-cp', '--checkpoint_path', default=None)
-=======
-    parser.add_argument('-ei', '--exp_id', default=None)
-    parser.add_argument('-j', '--run_jobs', default=None)
-    parser.add_argument('-ps', '--pretrained_savedir', default=None)
->>>>>>> camera
+    parser.add_argument('-j', '--run_jobs', type=int, default=0)
     parser.add_argument('-nw', '--num_workers', default=0, type=int)
+    parser.add_argument('-p', '--pretrained_weights_dir', type=str, default=None)
 
     args = parser.parse_args()
 
@@ -213,24 +207,7 @@ if __name__ == '__main__':
     # Run experiments or View them
     # ----------------------------
     if args.run_jobs:
-        # launch jobs
-        from haven import haven_jobs as hjb
-        job_config = {'volume': ['/mnt:/mnt'],
-                'image': 'images.borgy.elementai.net/issam/main',
-                'bid': '9000',
-                'restartable': '1',
-                'gpu': '2',
-                'mem': '30',
-                'cpu': '2'}
-        run_command = ('python trainval.py -ei <exp_id> -sb %s'
-                        ' ' %  
-                       (args.savedir_base))
-        hjb.run_exp_list_jobs(exp_list, 
-                            savedir_base=args.savedir_base, 
-                            workdir=os.path.dirname(os.path.realpath(__file__)),
-                            run_command=run_command,
-                            job_config=job_config)
-
+        pass
     else:
         # run experiments
         for exp_dict in exp_list:
@@ -240,4 +217,4 @@ if __name__ == '__main__':
                     datadir=args.datadir,
                     reset=args.reset,
                     num_workers=args.num_workers,
-                    pretrained_savedir=args.pretrained_savedir)
+                    pretrained_weights_dir=args.pretrained_weights_dir)

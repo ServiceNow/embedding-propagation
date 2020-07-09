@@ -40,9 +40,6 @@ class SSLWrapper(BaseWrapper):
         self.model.add_classifier(n_classes, modalities=0)
         self.nclasses = n_classes
 
-        if self.exp_dict["rotation_weight"] > 0:
-            self.model.add_classifier(4, "classifier_rot")
-
         best_accuracy = -1 
         self.label = exp_dict['model']['backbone'] + "_" + exp_dict['dataset_test'].split('_')[1].replace('-imagenet','')
         print('=============')
@@ -51,13 +48,13 @@ class SSLWrapper(BaseWrapper):
         print('n_classes:', exp_dict['n_classes'])
         print('support_size_train:', exp_dict['support_size_train'])
 
-
         if pretrained_savedir is None:
             # find the best checkpoint
-            if exp_dict['embedding_prop'] == False:
-                savedir_base = '/mnt/projects/vision_prototypes/embedding_propagation/david_logs/'
-            else:
-                savedir_base = '/mnt/datasets/public/research/adaptron_laplace/logs_borgy_finetune_haven_hparams'
+            savedir_base = exp_dict["finetuned_weights_root"]
+            if not os.path.exists(savedir_base):
+                raise ValueError("Please set the variable named \
+                    'finetuned_weights_root' with the path of the folder \
+                    with the episodic finetuning experiments")
             for exp_hash in os.listdir(savedir_base):
                 base_path = os.path.join(savedir_base, exp_hash)
                 exp_dict_path = os.path.join(base_path, 'exp_dict.json')
@@ -65,7 +62,7 @@ class SSLWrapper(BaseWrapper):
                     continue
                 loaded_exp_dict = hu.load_json(exp_dict_path)
                 pkl_path = os.path.join(base_path, 'score_list_best.pkl')
-                # 'd7717cd0eb06f9a55ffb05a751902784'
+
                 if exp_dict['support_size_train'] in [2,3,4]:
                     support_size_needed = 1
                 else:
@@ -78,18 +75,18 @@ class SSLWrapper(BaseWrapper):
                     loaded_exp_dict['support_size_train'] == support_size_needed,
                     loaded_exp_dict["embedding_prop"] == exp_dict["embedding_prop"]):
                     
-                    
                     model_path = os.path.join(base_path, 'checkpoint_best.pth')
+
                     try:
+                        print("Attempting to load ", model_path)
                         accuracy = hu.load_pkl(pkl_path)[-1]["val_accuracy"]
                         self.model.load_state_dict(torch.load(model_path)['model'], strict=False)
                         if accuracy > best_accuracy:
                             best_path = os.path.join(base_path, 'checkpoint_best.pth')
                             best_accuracy = accuracy
-                    except:
-                        print("Err")
+                    except Exception as e:
+                        print(e)
                    
-
             assert(best_accuracy > 0.1)
             print("Finetuning %s with original accuracy : %f" %(base_path, best_accuracy))
             self.model.load_state_dict(torch.load(best_path)['model'], strict=False)

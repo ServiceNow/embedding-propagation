@@ -83,7 +83,7 @@ for dataset in [miniimagenet, tiered_imagenet, cub]:
                                                         "val_iters": 600,
                                                         "test_iters": 1000,
                                                         "tasks_per_batch": 1,
-                                                        "pretrained_weights_root": "/mnt/datasets/public/research/adaptron_laplace/logs_borgy_pretrain_haven",
+                                                        "pretrained_weights_root": "./logs",
 
                                                         # Model
                                                         "dropout": 0.1,
