@@ -40,7 +40,7 @@ miniimagenet = {
     "dataset_val": "episodic_miniimagenet",
     "dataset_test": "episodic_miniimagenet",
     "n_classes": 64,
-    'data_root':'./data/mini-imagenet/'
+    'data_root':'mini-imagenet/'
 }
 
 tiered_imagenet = {
@@ -49,7 +49,7 @@ tiered_imagenet = {
     "dataset_train": "episodic_tiered-imagenet",
     "dataset_val": "episodic_tiered-imagenet",
     "dataset_test": "episodic_tiered-imagenet",
-    'data_root':'./data/tiered-imagenet'
+    'data_root':'tiered-imagenet'
 }
 
 cub = {
@@ -58,7 +58,7 @@ cub = {
     "dataset_train": "episodic_cub",
     "dataset_val": "episodic_cub",
     "dataset_test": "episodic_cub",
-    'data_root':'./data/CUB_200_2011'
+    'data_root':'CUB_200_2011'
 }
 
 EXP_GROUPS = {}
@@ -133,48 +133,48 @@ for dataset in [tiered_imagenet, miniimagenet]:
 
                         "model": backbone,
                             
-                        # Hardware
-                        "ngpu": 1,
-                        "random_seed": 42,
+                            # Hardware
+                            "ngpu": 1,
+                            "random_seed": 42,
 
-                        # Optimization
-                        "batch_size": 1,
-                        "train_iters": 10,
-                        "val_iters": 600,
-                        "test_iters": 600,
-                        "tasks_per_batch": 1,
+                            # Optimization
+                            "batch_size": 1,
+                            "train_iters": 10,
+                            "val_iters": 600,
+                            "test_iters": 600,
+                            "tasks_per_batch": 1,
 
-                        # Model
-                        "dropout": 0.1,
-                        "avgpool": True,
+                            # Model
+                            "dropout": 0.1,
+                            "avgpool": True,
 
-                        # Data
-                        'n_classes': dataset["n_classes"],
-                        "collate_fn": "identity",
-                        "transform_train": backbone["transform_train"],
-                        "transform_val": backbone["transform_val"],
-                        "transform_test": backbone["transform_test"],
+                            # Data
+                            'n_classes': dataset["n_classes"],
+                            "collate_fn": "identity",
+                            "transform_train": backbone["transform_train"],
+                            "transform_val": backbone["transform_val"],
+                            "transform_test": backbone["transform_test"],
 
-                        "dataset_train": dataset["dataset_train"],
-                        "classes_train": 5,
-                        "support_size_train": shot,
-                        "query_size_train": 15,
-                        "unlabeled_size_train": 0,
+                            "dataset_train": dataset["dataset_train"],
+                            "classes_train": 5,
+                            "support_size_train": shot,
+                            "query_size_train": 15,
+                            "unlabeled_size_train": 0,
 
-                        "dataset_val": dataset["dataset_val"],
-                        "classes_val": 5,
-                        "support_size_val": shot,
-                        "query_size_val": 15,
-                        "unlabeled_size_val": 0,
+                            "dataset_val": dataset["dataset_val"],
+                            "classes_val": 5,
+                            "support_size_val": shot,
+                            "query_size_val": 15,
+                            "unlabeled_size_val": 0,
 
-                        "dataset_test": dataset["dataset_test"],
-                        "classes_test": 5,
-                        "support_size_test": shot,
-                        "query_size_test": 15,
-                        "unlabeled_size_test": ust,
-                        "predict_method":"labelprop",
-                        "finetuned_weights_root": "./logs",
+                            "dataset_test": dataset["dataset_test"],
+                            "classes_test": 5,
+                            "support_size_test": shot,
+                            "query_size_test": 15,
+                            "unlabeled_size_test": ust,
+                            "predict_method":"labelprop",
+                            "finetuned_weights_root": "./logs",
 
-                        # Hparams
-                        "embedding_prop" : embedding_prop,
+                            # Hparams
+                            "embedding_prop" : embedding_prop,
                         }]

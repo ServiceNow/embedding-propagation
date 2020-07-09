@@ -35,7 +35,7 @@ miniimagenet = {
     "dataset_train": "episodic_miniimagenet",
     "dataset_val": "episodic_miniimagenet",
     "dataset_test": "episodic_miniimagenet",
-    "data_root": "./data/mini-imagenet/",
+    "data_root": "mini-imagenet",
     "n_classes": 64
 }
 
@@ -45,7 +45,7 @@ tiered_imagenet = {
     "dataset_train": "episodic_tiered-imagenet",
     "dataset_val": "episodic_tiered-imagenet",
     "dataset_test": "episodic_tiered-imagenet",
-    "data_root": "./data/tiered-imagenet/",
+    "data_root": "tiered-imagenet",
 }
 
 cub = {
@@ -54,7 +54,7 @@ cub = {
     "dataset_train": "episodic_cub",
     "dataset_val": "episodic_cub",
     "dataset_test": "episodic_cub",
-    "data_root": "./data/CUB_200_2011/"
+    "data_root": "CUB_200_2011"
 }
 
 EXP_GROUPS = {"finetune": []}

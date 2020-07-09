@@ -36,7 +36,7 @@ miniimagenet = {
     "dataset_val": "episodic_miniimagenet",
     "dataset_test": "episodic_miniimagenet",
     "n_classes": 64,
-    "data_root": "./data/mini-imagenet/"
+    "data_root": "mini-imagenet"
 }
 
 tiered_imagenet = {
@@ -45,7 +45,7 @@ tiered_imagenet = {
     "dataset_train": "rotated_tiered-imagenet",
     "dataset_val": "episodic_tiered-imagenet",
     "dataset_test": "episodic_tiered-imagenet",
-    "data_root": "./data/tiered-imagenet/",
+    "data_root": "tiered-imagenet",
 }
 
 cub = {
@@ -54,7 +54,7 @@ cub = {
     "dataset_train": "rotated_cub",
     "dataset_val": "episodic_cub",
     "dataset_test": "episodic_cub",
-    "data_root": "./data/CUB_200_2011/"
+    "data_root": "CUB_200_2011"
 }
 
 EXP_GROUPS = {"pretrain": []}
@@ -93,21 +93,18 @@ for dataset in [miniimagenet, tiered_imagenet, cub]:
                                         "transform_test": backbone["transform_test"],
 
                                         "dataset_train": dataset["dataset_train"],
-                                        'dataset_train_root': dataset["data_root"],
                                         "classes_train": 5,
                                         "support_size_train": 5,
                                         "query_size_train": 15,
                                         "unlabeled_size_train": 0,
 
                                         "dataset_val": dataset["dataset_val"],
-                                        'dataset_val_root': dataset["data_root"],
                                         "classes_val": 5,
                                         "support_size_val": 5,
                                         "query_size_val": 15,
                                         "unlabeled_size_val": 0,
 
                                         "dataset_test": dataset["dataset_test"],
-                                        'dataset_test_root': dataset["data_root"],
                                         "classes_test": 5,
                                         "support_size_test": 5,
                                         "query_size_test": 15,

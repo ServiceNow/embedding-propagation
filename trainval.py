@@ -45,7 +45,7 @@ def trainval(exp_dict, savedir_base, datadir, reset=False,
     # load datasets
     # ==========================
     train_set = datasets.get_dataset(dataset_name=exp_dict["dataset_train"],
-                data_root=exp_dict.get("dataset_train_root", datadir),
+                data_root=os.path.join(datadir, exp_dict["dataset_train_root"]),
                 split="train", 
                 transform=exp_dict["transform_train"], 
                 classes=exp_dict["classes_train"],
@@ -55,7 +55,7 @@ def trainval(exp_dict, savedir_base, datadir, reset=False,
                 unlabeled_size=exp_dict["unlabeled_size_train"])
 
     val_set = datasets.get_dataset(dataset_name=exp_dict["dataset_val"],
-                data_root=exp_dict.get("dataset_val_root", datadir),
+                data_root=os.path.join(datadir, exp_dict["dataset_val_root"]),
                 split="val", 
                 transform=exp_dict["transform_val"], 
                 classes=exp_dict["classes_val"],
@@ -65,7 +65,7 @@ def trainval(exp_dict, savedir_base, datadir, reset=False,
                 unlabeled_size=exp_dict["unlabeled_size_val"])
 
     test_set = datasets.get_dataset(dataset_name=exp_dict["dataset_test"],
-                data_root=exp_dict.get("dataset_test_root", datadir),
+                data_root=os.path.join(datadir, exp_dict["dataset_test_root"]),
                 split="test", 
                 transform=exp_dict["transform_val"], 
                 classes=exp_dict["classes_test"],
