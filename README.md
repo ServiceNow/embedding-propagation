@@ -60,10 +60,24 @@ where `<datadir>` is the directory where the data is saved.
 In `exp_configs/finetune_exps.py`, set `"pretrained_weights_root": ./logs/pretraining/`
 
 ```
-python3 trainval.py -e finetune -sb ./logs -d <datadir>
+python3 trainval.py -e finetune -sb ./logs/finetuning -d <datadir>
 ```
 
+### 3. SSL experirments with 100 unlabeled
 
+In `exp_configs/ssl_exps.py`, set `"pretrained_weights_root": ./logs/finetuning/`
+
+```
+python3 trainval.py -e ssl_large -sb ./logs/ssl/ -d <datadir>
+```
+
+### 4. SSL experirments with 20-100% unlabeled
+
+In `exp_configs/ssl_exps.py`, set `"pretrained_weights_root": ./logs/finetuning/`
+
+```
+python3 trainval.py -e ssl_small -sb ./logs/ssl/ -d <datadir>
+```
 
 ### View the Results
 |support_size|dataset_train|backbone|test_accuracy|test_confidence|
