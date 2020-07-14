@@ -44,6 +44,8 @@ This command installs the [Haven library](https://github.com/ElementAI/haven) wh
 * [tiered-imagenet](https://github.com/renmengye/few-shot-ssl-public#tieredimagenet)
 * [CUB](https://github.com/wyharveychen/CloserLookFewShot/tree/master/filelists/CUB)
 
+If you have the `pkl` version of miniimagenet, you can still use it by setting the dataset name to "episodic_miniimagenet_pkl", in each of the files in `exp_configs`.
+
 <!-- You can either edit `data_root` in the `exp_configs/[pretraining|finetuning].py` or create a symbolic link to the each of the dataset folders at `./data/dataset-name/` (default). -->
 
 ### Reproduce the results in the paper
