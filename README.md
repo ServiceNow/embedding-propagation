@@ -93,7 +93,7 @@ python3 trainval.py -e ssl_small -sb ./logs/ssl/ -d <datadir>
 |episodic_tiered-imagenet|resnet12|75.90 ± 0.90|86.83 ± 0.58|
 |episodic_tiered-imagenet|wrn|78.46 ± 0.90|87.46 ± 0.62|
 
-Different from the paper, these results were obtained on a run with fixed hyperparameters: during fine-tuning lr=0.001, alpha=0.2 (now default), train_iters=600, classification_weight=0.1
+Different from the paper, these results were obtained on a run with fixed hyperparameters during fine-tuning: lr=0.001, alpha=0.2 (now default), train_iters=600, classification_weight=0.1
 
 ## Citation
 ```
