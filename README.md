@@ -80,27 +80,17 @@ python3 trainval.py -e ssl_small -sb ./logs/ssl/ -d <datadir>
 ```
 
 ### View the Results
-|support_size|dataset_train|backbone|test_accuracy|test_confidence|
-|:----------------:|:-----------:|:------:|:-----------:|:-------------:|
-|        1         |     cub     | conv4  |   0.6692    |    0.0094     |
-|        1         |     cub     |resnet12|   0.8285    |    0.0081     |
-|        1         |     cub     |  wrn   |   0.8775    |    0.0070     |
-|        1         |miniimagenet | conv4  |   0.5932    |    0.0084     |
-|        1         |miniimagenet |resnet12|   0.6837    |    0.0086     |
-|        1         |miniimagenet |  wrn   |   0.7074    |    0.0086     |
-|        1         |tiered-imagen| conv4  |   0.6070    |    0.0097     |
-|        1         |tiered-imagen|resnet12|   0.7677    |    0.0085     |
-|        1         |tiered-imagen|  wrn   |   0.7850    |    0.0086     |
-|                  |             |        |             |               |
-|        5         |     cub     | conv4  |   0.7984    |    0.0067     |
-|        5         |     cub     |resnet12|   0.9132    |    0.0042     |
-|        5         |     cub     |  wrn   |   0.9404    |    0.0036     |
-|        5         |miniimagenet | conv4  |   0.7295    |    0.0063     |
-|        5         |miniimagenet |resnet12|   0.8152    |    0.0058     |
-|        5         |miniimagenet |  wrn   |   0.8434    |    0.0056     |
-|        5         |tiered-imagen| conv4  |   0.7391    |    0.0074     |
-|        5         |tiered-imagen|resnet12|   0.8748    |    0.0058     |
-|        5         |tiered-imagen|  wrn   |   0.8845    |    0.0053     |
+|dataset|model|1-shot|5-shot|
+|-------|-----|------|------|
+|episodic_cub|conv4|65.94 ± 0.93|78.80 ± 0.64|
+|episodic_cub|resnet12|81.32 ± 0.84|91.02 ± 0.44|
+|episodic_cub|wrn|87.48 ± 0.68|93.74 ± 0.35|
+|episodic_miniimagenet|conv4|57.41 ± 0.85|72.35 ± 0.62|
+|episodic_miniimagenet|resnet12|64.82 ± 0.89|80.59 ± 0.64|
+|episodic_miniimagenet|wrn|69.92 ± 0.81|83.64 ± 0.54|
+|episodic_tiered-imagenet|conv4|58.63 ± 0.92|72.80 ± 0.78|
+|episodic_tiered-imagenet|resnet12|75.90 ± 0.90|86.83 ± 0.58|
+|episodic_tiered-imagenet|wrn|78.46 ± 0.90|87.46 ± 0.62|
 
 ## Citation
 ```
