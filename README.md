@@ -3,7 +3,7 @@
 
 
 <h1 align="center">Embedding Propagation</h1>
-<h5 align="center">Smoother Manifold for Few-Shot Classification <a href="https://arxiv.org/abs/2003.04151">[Paper]</a>(ECCV2020) </h5>  
+<h5 align="center">Smoother Manifold for Few-Shot Classification <a href="https://arxiv.org/abs/2003.04151">[Paper]</a> (ECCV2020) </h5>  
 
 
 
