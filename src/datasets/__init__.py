@@ -48,6 +48,10 @@ def get_dataset(dataset_name,
                                        sampler=few_shot_sampler,
                                        size=n_iters,
                                        transforms=transform_func)
+    elif dataset_name == "rotated_episodic_miniimagenet_pkl":
+        dataset = RotatedNonEpisodicMiniImagenetPkl(data_root=data_root,
+                                          split=split,
+                                          transforms=transform_func)
     elif dataset_name == "episodic_miniimagenet_pkl":
         few_shot_sampler = FewShotSampler(classes, support_size, query_size, unlabeled_size)
         dataset = EpisodicMiniImagenetPkl(data_root=data_root,
