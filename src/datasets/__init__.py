@@ -12,7 +12,7 @@ import  numpy as np
 from torchvision.datasets import CIFAR10, CIFAR100
 from .episodic_dataset import FewShotSampler
 from .episodic_miniimagenet import EpisodicMiniImagenet, EpisodicMiniImagenetPkl
-from .miniimagenet import NonEpisodicMiniImagenet, RotatedNonEpisodicMiniImagenet
+from .miniimagenet import NonEpisodicMiniImagenet, RotatedNonEpisodicMiniImagenet, RotatedNonEpisodicMiniImagenetPkl
 from .episodic_tiered_imagenet import EpisodicTieredImagenet
 from .tiered_imagenet import RotatedNonEpisodicTieredImagenet
 from .cub import RotatedNonEpisodicCUB, NonEpisodicCUB
