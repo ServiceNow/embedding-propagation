@@ -2,8 +2,8 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 
-<h1 align="center">Embedding Propagation (ECCV2020) </h1>
-<h5 align="center">Smoother Manifold for Few-Shot Classification <a href="https://arxiv.org/abs/2003.04151">[Paper]</a> </h5> 
+<h1 align="center">Embedding Propagation</h1>
+<h5 align="center">Smoother Manifold for Few-Shot Classification <a href="https://arxiv.org/abs/2003.04151">[Paper]</a>(ECCV2020) </h5>  
 
 
 
