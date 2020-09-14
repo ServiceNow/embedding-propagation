@@ -2,6 +2,7 @@ from torch.utils.data import Dataset
 import torch
 import numpy as np
 import os
+import pickle as pkl
 
 class NonEpisodicMiniImagenet(Dataset):
     tasks_type = "clss"
