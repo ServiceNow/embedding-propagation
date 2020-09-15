@@ -1,1 +1,1 @@
--e git://github.com/IssamLaradji/haven.git#egg=haven
+-e git://github.com/haven-ai/haven.git#egg=haven
