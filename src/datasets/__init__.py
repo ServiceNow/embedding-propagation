@@ -12,7 +12,7 @@ import  numpy as np
 from torchvision.datasets import CIFAR10, CIFAR100
 from .episodic_dataset import FewShotSampler
 from .episodic_miniimagenet import EpisodicMiniImagenet, EpisodicMiniImagenetPkl
-from .miniimagenet import NonEpisodicMiniImagenet, RotatedNonEpisodicMiniImagenet
+from .miniimagenet import NonEpisodicMiniImagenet, RotatedNonEpisodicMiniImagenet, RotatedNonEpisodicMiniImagenetPkl
 from .episodic_tiered_imagenet import EpisodicTieredImagenet
 from .tiered_imagenet import RotatedNonEpisodicTieredImagenet
 from .cub import RotatedNonEpisodicCUB, NonEpisodicCUB
@@ -48,6 +48,10 @@ def get_dataset(dataset_name,
                                        sampler=few_shot_sampler,
                                        size=n_iters,
                                        transforms=transform_func)
+    elif dataset_name == "rotated_episodic_miniimagenet_pkl":
+        dataset = RotatedNonEpisodicMiniImagenetPkl(data_root=data_root,
+                                          split=split,
+                                          transforms=transform_func)
     elif dataset_name == "episodic_miniimagenet_pkl":
         few_shot_sampler = FewShotSampler(classes, support_size, query_size, unlabeled_size)
         dataset = EpisodicMiniImagenetPkl(data_root=data_root,

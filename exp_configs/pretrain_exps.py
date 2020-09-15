@@ -32,9 +32,9 @@ resnet12 = {
 
 miniimagenet = {
     "dataset": "miniimagenet",
-    "dataset_train": "rotated_miniimagenet",
-    "dataset_val": "episodic_miniimagenet",
-    "dataset_test": "episodic_miniimagenet",
+    "dataset_train": "rotated_episodic_miniimagenet_pkl",
+    "dataset_val": "episodic_miniimagenet_pkl",
+    "dataset_test": "episodic_miniimagenet_pkl",
     "n_classes": 64,
     "data_root": "mini-imagenet"
 }
@@ -93,18 +93,21 @@ for dataset in [miniimagenet, tiered_imagenet, cub]:
                                         "transform_test": backbone["transform_test"],
 
                                         "dataset_train": dataset["dataset_train"],
+                                        "dataset_train_root": dataset["data_root"],
                                         "classes_train": 5,
                                         "support_size_train": 5,
                                         "query_size_train": 15,
                                         "unlabeled_size_train": 0,
 
                                         "dataset_val": dataset["dataset_val"],
+                                        "dataset_val_root": dataset["data_root"],
                                         "classes_val": 5,
                                         "support_size_val": 5,
                                         "query_size_val": 15,
                                         "unlabeled_size_val": 0,
 
                                         "dataset_test": dataset["dataset_test"],
+                                        "dataset_test_root": dataset["data_root"],
                                         "classes_test": 5,
                                         "support_size_test": 5,
                                         "query_size_test": 15,
