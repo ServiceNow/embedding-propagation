@@ -36,7 +36,7 @@ Generate the results from the <a href="https://arxiv.org/abs/2003.04151">[Paper]
 
 `pip install -r requirements.txt`
  
-This command installs the [Haven library](https://github.com/IssamLaradji/haven) which helps in managing the experiments.
+This command installs the [Haven library](https://github.com/haven-ai/haven) which helps in managing the experiments.
 
 ### Download the Datasets
 
