@@ -82,12 +82,12 @@ def global_consistency(weights, alpha=1, norm_prop=False):
     """Implements D. Zhou et al. "Learning with local and global consistency". (Same as in TPN paper but without bug)
 
     Args:
-        weights: Tensor of shape (batch, n, n). Expected to be exp( -d^2/s^2 ), where d is the euclidean distance and
+        weights: Tensor of shape (n, n). Expected to be exp( -d^2/s^2 ), where d is the euclidean distance and
             s the scale parameter.
-        labels: Tensor of shape (batch, n, n_classes)
+        labels: Tensor of shape (n, n_classes)
         alpha: Scaler, acts as a smoothing factor
     Returns:
-        Tensor of shape (batch, n, n_classes) representing the logits of each classes
+        Tensor of shape (n, n_classes) representing the logits of each classes
     """
     n = weights.shape[1]
     identity = torch.eye(n, dtype=weights.dtype, device=weights.device)
