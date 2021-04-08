@@ -3,7 +3,7 @@ import torch.nn.functional as F
 import numpy as np
 
 
-class EmbeddingPropagation(torch.nn.Module):
+class BatchEmbeddingPropagation(torch.nn.Module):
     def __init__(self, alpha=0.5, rbf_scale=1, norm_prop=False):
         super().__init__()
         self.alpha = alpha
@@ -11,10 +11,10 @@ class EmbeddingPropagation(torch.nn.Module):
         self.norm_prop = norm_prop
 
     def forward(self, x, propagator=None):
-        return embedding_propagation(x, self.alpha, self.rbf_scale, self.norm_prop, propagator=propagator)
+        return batch_embedding_propagation(x, self.alpha, self.rbf_scale, self.norm_prop, propagator=propagator)
 
 
-class LabelPropagation(torch.nn.Module):
+class BatchLabelPropagation(torch.nn.Module):
     def __init__(self, alpha=0.2, rbf_scale=1, norm_prop=True, apply_log=True, balanced=False):
         super().__init__()
         self.alpha = alpha
@@ -37,11 +37,11 @@ class LabelPropagation(torch.nn.Module):
         Returns:
             tuple(Tensor, Tensor) -- Logits and Propagator
         """
-        return label_propagation(x, labels, nclasses, self.alpha, self.rbf_scale,
+        return batch_label_propagation(x, labels, nclasses, self.alpha, self.rbf_scale,
                                  self.norm_prop, self.apply_log, propagator=propagator,
                                  balanced=self.balanced)
 
-def get_similarity_matrix(x, rbf_scale):
+def batch_get_similarity_matrix(x, rbf_scale):
     b, e, c = x.size()
     sq_dist = ((x.view(b, e, 1, c) - x.view(b, 1, e, c))**2).sum(-1) / np.sqrt(c)
     mask = sq_dist != 0
@@ -52,15 +52,15 @@ def get_similarity_matrix(x, rbf_scale):
     return weights
 
 
-def embedding_propagation(x, alpha, rbf_scale, norm_prop, propagator=None):
+def batch_embedding_propagation(x, alpha, rbf_scale, norm_prop, propagator=None):
     if propagator is None:
-        weights = get_similarity_matrix(x, rbf_scale)
-        propagator = global_consistency(
+        weights = batch_get_similarity_matrix(x, rbf_scale)
+        propagator = batch_global_consistency(
             weights, alpha=alpha, norm_prop=norm_prop)
     return torch.bmm(propagator, x)
 
 
-def global_consistency(weights, alpha=1, norm_prop=False):
+def batch_global_consistency(weights, alpha=1, norm_prop=False):
     """Implements D. Zhou et al. "Learning with local and global consistency". (Same as in TPN paper but without bug)
     Args:
         weights: Tensor of shape (n, n). Expected to be exp( -d^2/s^2 ), where d is the euclidean distance and
@@ -85,14 +85,14 @@ def global_consistency(weights, alpha=1, norm_prop=False):
     return propagator
 
 
-def label_propagation(x, labels, nclasses, alpha, rbf_scale, norm_prop, apply_log, propagator=None, balanced=False, epsilon=1e-6):
+def batch_label_propagation(x, labels, nclasses, alpha, rbf_scale, norm_prop, apply_log, propagator=None, balanced=False, epsilon=1e-6):
     labels = F.one_hot(labels, nclasses + 1)
     labels = labels[..., :nclasses].float()  # the max label is unlabeled
     if balanced:
         labels = labels / labels.sum(-1, keepdim=True)
     if propagator is None:
-        weights = get_similarity_matrix(x, rbf_scale)
-        propagator = global_consistency(
+        weights = batch_get_similarity_matrix(x, rbf_scale)
+        propagator = batch_global_consistency(
             weights, alpha=alpha, norm_prop=norm_prop)
     y_pred = torch.bmm(propagator, labels)
     if apply_log:
