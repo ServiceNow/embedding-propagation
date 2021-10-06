@@ -97,6 +97,9 @@ python3 trainval.py -e ssl_small -sb ./logs/ssl/ -d <datadir>
 
 Different from the paper, these results were obtained on a run with fixed hyperparameters during fine-tuning: lr=0.001, alpha=0.2 (now default), train_iters=600, classification_weight=0.1
 
+### Pre-trained weights
+https://zenodo.org/record/5552602#.YV2b-UbMKvU
+
 ## Citation
 ```
 @article{rodriguez2020embedding,
