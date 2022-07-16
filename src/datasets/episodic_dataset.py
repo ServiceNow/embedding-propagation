@@ -103,19 +103,24 @@ class EpisodicDataset(Dataset):
 
         """
         fs_task_info, indices = self.task_list[idx]
-        ordered_argindices = np.argsort(indices)
-        ordered_indices = np.sort(indices)
+        # The commented out lines were origionally used for sequential reading from hdf5 fromat
+        # Which is no longer used.
+        #ordered_argindices = np.argsort(indices)
+        #ordered_indices = np.sort(indices)
         nclasses, support_size, query_size, unlabeled_size = fs_task_info
         k = support_size + query_size + unlabeled_size
-        _images = self.sample_images(ordered_indices)
-        images = torch.stack([self.transforms(_images[i]) for i in np.argsort(ordered_argindices)])
+        #_images = self.sample_images(ordered_indices)
+        #images = torch.stack([self.transforms(_images[i]) for i in np.argsort(ordered_argindices)])
+        _images = self.sample_images(indices)
+        images = self.transforms(_images)
         total, c, h, w = images.size()
         assert(total == (k * nclasses))
         images = images.view(k, nclasses, c, h, w)
         del(_images)
         images = images * 2 - 1
-        targets = np.zeros([nclasses * k], dtype=int)
-        targets[ordered_argindices] = self.labels[ordered_indices, ...].ravel()
+        #targets = np.zeros([nclasses * k], dtype=int)
+        #targets[ordered_argindices] = self.labels[ordered_indices, ...].ravel()
+        targets = self.labels[indices, ...].ravel()
         sample = {"dataset": self.name,
                   "channels": c,
                   "height": h,
